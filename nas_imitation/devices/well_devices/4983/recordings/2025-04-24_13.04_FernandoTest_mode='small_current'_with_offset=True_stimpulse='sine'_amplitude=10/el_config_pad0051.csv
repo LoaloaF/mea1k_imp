@@ -1,3 +1,0 @@
-,channel,electrode,x,y,stim,stim_unit,pad_id,stim_unit_offset
-0,841,12888,2240.0,1015.0,False,,51.0,1023
-1,943,13108,2240.0,1032.5,True,31.0,51.0,1023

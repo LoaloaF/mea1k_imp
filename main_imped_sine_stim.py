@@ -56,6 +56,7 @@ def process_config(config_fullfname, path, rec_time, post_config_wait_time, s,
 
     # hardcoded for now for device 4983
     offset_map = {0: 383, 1: 351, 2: 375, 3: 0, 4: 767, 5: 767, 6: 538, 7: 560, 8: 555, 9: 0, 10: 1023, 11: 703, 12: 703, 13: 208, 14: 695, 15: 343, 16: 767, 17: 767, 18: 767, 19: 156, 20: 1023, 21: 1023, 22: 0, 23: 703, 24: 1023, 25: 0, 26: 343, 27: 0, 28: 252, 29: 0, 30: 703, 31: 1023}
+    # a secpond run after a few hourse gave differnt value Stimulation unit 0, Offset: 351 # Stimulation unit 1, Offset: 703 # Stimulation unit 2, Offset: 17 # Stimulation unit 3, Offset: 0 # Stimulation unit 4, Offset: 383 # Stimulation unit 5, Offset: 332 # Stimulation unit 6, Offset: 439 # Stimulation unit 7, Offset: 447 # Stimulation unit 8, Offset: 471 # Stimulation unit 9, Offset: 471 # Stimulation unit 10, Offset: 293 # Stimulation unit 11, Offset: 431 # Stimulation unit 12, Offset: 703
     config_map['stim_unit_offset'] = offset_map[stim_units[0]]
     print(config_map)
     config_map.to_csv(os.path.join(path, os.path.basename(config_fullfname).replace(".cfg", ".csv")))
@@ -70,9 +71,9 @@ def main():
     print(f"nas_dir: {nas_dir}")
     
     amplitude = 100
-    mode = "small_current"
+    mode = "small_current" # vs large_current mode effect on offset?
     stimpulse = 'sine'
-    with_offset = True
+    with_offset = False
     
     t = datetime.datetime.now().strftime("%Y-%m-%d_%H.%M")
     name = "FernandoTest"

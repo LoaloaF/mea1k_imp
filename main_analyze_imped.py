@@ -84,58 +84,18 @@ def extract_impedance(subdir, implant_name, current_ampl_nA, debug=False):
     save_output(subdir, aggr_imp_data, "extracted_imp_voltages.csv")
 
     
-def vis_impedance(subdir, implant_name):
+def vis_impedance(subdir, name):
     data = pd.read_csv(os.path.join(subdir, "processed", "extracted_imp_voltages.csv"))
     data = data[data.stim_unit.notna()]
     data = data.sort_values(by='pad_id').reset_index(drop=True)
-    print(data.stim_unit.values/32)
-    plt.scatter(data.stim_unit.values, data.imp_kOhm, alpha=.4)
+    print(data.stim_unit)
+    plt.scatter(data.stim_unit.values, data.imp_kOhm, alpha=.4, s=5, label=f"Stimulated {name}")
     plt.yscale('log')
-    plt.show()
-    print(data)
-    
-    # # draw thw connectivty of the chip
-    # mapping = get_raw_implant_mapping(implant_name=implant_name)
-    # colors = np.stack([mapping.sort_values('mea1k_el').mea1k_connectivity.values]*3, axis=1)
-    # colors = np.clip(colors, 0, .75)
-    # # (fig, ax), el_rects = draw_mea1k(el_color=list(colors))
-    
-    # imp = np.clip(data.imp_kOhm.values, 0, 6.5*1e2)
-    # # Use the hsv colormap
-    # cmap = plt.get_cmap('plasma')
-    # norm = plt.Normalize(vmin=0, vmax=6.5*1e2)
-    # imp_colors = cmap(norm(imp))
-    # imp_colors = {pad_id: imp_colors[i][:3] for i, pad_id in enumerate(data.pad_id)}
-
-    # draw_mea1K_colorbar(cmap, norm, 'Impedance [kOhm]', orientation='vertical')
-    # draw_interconnect_pads(mapping, edgecolor=imp_colors, draw_on_ax=ax, pad_alpha=.6)
-    # plt.savefig(os.path.join(subdir, "processed", "impedance.png"))
-
-    # cmap = plt.get_cmap('hsv')
-    # norm = plt.Normalize(vmin=0, vmax=32)
-    # stimunit_color = {pad_id: cmap(norm(stim_unit)) 
-    #                   for pad_id, stim_unit in zip(data.pad_id, data.stim_unit)}
-    
-    # plt.figure()
-    # plt.scatter(data.pad_id, imp, color=list(stimunit_color.values()))
-    # # plt.ylim(0, 2500)
-    # # vertical line at 0, 125, 1628/2+125, 1628/2+125+125
-    # plt.axvline(0, color='k', linestyle='dashed')
-    # plt.axvline(106, color='k', linestyle='dashed')
-    # plt.axvline(814, color='k', linestyle='dashed')
-    # plt.axvline(920, color='k', linestyle='dashed')
-    # #save
-    
-def compare_impedance(subdirs, implant_name):
-    for subdir in subdirs:
-        data = pd.read_csv(os.path.join(subdir, "processed", "extracted_imp_voltages.csv"))
-        data = data[data.stim_unit.notna()]
-        data.sort_values(by='pad_id', inplace=True)
-        imp = np.clip(data.imp_kOhm.values, 0, 6.5*1e3)
-        [plt.axvline(x, color='k', linestyle='dashed') for x in [0, 106, 814, 920]]
-        plt.scatter(data.pad_id, imp, alpha=.6, label=subdir.split('/')[-1])
     plt.legend()
-    plt.show()
+    plt.xlabel("Stimulated unit")
+    plt.ylabel("Impedance (kOhm)")
+    plt.savefig(os.path.join(subdir, "processed", f"impedance_{name}.png"))
+    print(data)
     
 def main(): 
     print("Starting in vivo impedance analysis")
@@ -146,7 +106,7 @@ def main():
     current_ampl_nA = 200 # amplidute == 100 bits, step == 2nA - not sure though
     
     subdirs = [
-        f"devices/well_devices/{4983}/recordings/2025-04-24_12.33_FernandoTest_mode='small_current'_with_offset=False_stimpulse='sine'_amplitude=100",
+        f"devices/well_devices/{4983}/recordings//2025-04-24_15.36_FernandoTest_mode=\'small_current\'_with_offset=False_stimpulse=\'sine\'_amplitude=100/",
         f"devices/well_devices/{4983}/recordings/2025-04-24_13.09_FernandoTest_mode='small_current'_with_offset=True_stimpulse='sine'_amplitude=100",
     ]
     # extract_impedance(os.path.join(nas_dir, subdirs[0]), implant_name=implant_name, 
@@ -154,10 +114,9 @@ def main():
     # extract_impedance(os.path.join(nas_dir, subdirs[1]), implant_name=implant_name, 
     #                   current_ampl_nA=current_ampl_nA, debug=False)
     
-    
-    vis_impedance(os.path.join(nas_dir, subdirs[1]), implant_name=implant_name)
-    # compare_impedance([os.path.join(nas_dir, subdir) for subdir in subdirs], implant_name=implant_name)
-    # plt.show()
+    vis_impedance(os.path.join(nas_dir, subdirs[0]), name="without_offset")
+    vis_impedance(os.path.join(nas_dir, subdirs[1]), name="with_offset")
+    plt.show()
     
 if __name__ == "__main__":
     main()

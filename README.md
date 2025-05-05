@@ -68,3 +68,7 @@ Here you should see that MEA1K impedances cluster if they are stimulated by the 
 
 
 You can explore the extracted_imp_voltages.csv  
+
+
+# Ringnode stimulation method
+![Impedance Results](sine_amplitudes.png)

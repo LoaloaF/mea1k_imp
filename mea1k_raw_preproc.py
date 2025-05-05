@@ -9,7 +9,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
-from ephys_constants import SAMPLING_RATE, MAX_AMPL_mV, ADC_RESOLUTION, device_paths
+from ephys_constants import MEA_OVERRIDE_GAIN, SAMPLING_RATE, MAX_AMPL_mV, ADC_RESOLUTION, device_paths
 import ephys_constants as C
 # from CustomLogger import CustomLogger as Logger
 
@@ -24,7 +24,8 @@ def _get_recording_gain(path, fname):
     return gain
 
 def _get_recording_resolution(gain):
-    return (MAX_AMPL_mV/ADC_RESOLUTION) /gain
+    return (MAX_AMPL_mV/ADC_RESOLUTION)/ MEA_OVERRIDE_GAIN
+    # return (MAX_AMPL_mV/ADC_RESOLUTION) /gain
 
 def _get_recording_version(path, fname):
     with h5py.File(os.path.join(path, fname), 'r') as file:

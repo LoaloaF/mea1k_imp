@@ -49,8 +49,8 @@ def setup_array(electrodes, stim_electrodes=None, randomize_routing=False):
     
     if not randomize_routing:
         array.select_electrodes(electrodes)
-        array.connect_all_floating_amplifiers()
-        array.connect_amplifier_to_ringnode(0)
+        # array.connect_all_floating_amplifiers()
+        # array.connect_amplifier_to_ringnode(0)
 
     else:
         print("Randomizing routing...", end="", flush=True)

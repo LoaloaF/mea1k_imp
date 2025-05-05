@@ -39,6 +39,12 @@ def process_config(config_fullfname, path, rec_time, post_config_wait_time, s,
     time.sleep(post_config_wait_time/1/3)
     
     turn_on_stimulation_units(stim_units, mode=mode)
+    print(f"Connected ampl: {array.query_amplifier_at_electrode(stim_el)}")
+    print(f"Connected ampl stim unit: {array.query_amplifier_at_stimulation(stim_units[0])}")
+    # print(f"Connected stim unit at ampl: {array.query_stimulation_at_amplifier(stim_units[0])}")
+    print(f"Connected stim unit at electrode: {array.query_stimulation_at_electrode(stim_el)}")
+    
+    
     time.sleep(post_config_wait_time* 2/3)
     
     print(f"\nStimulating ~ ~ ~ ~ ~ ~ ~ ~ "
@@ -70,13 +76,13 @@ def main():
     
     print(f"nas_dir: {nas_dir}")
     
-    amplitude = 100
+    amplitude = 10
     mode = "small_current" # vs large_current mode effect on offset?
     stimpulse = 'sine'
     with_offset = False
     
     t = datetime.datetime.now().strftime("%Y-%m-%d_%H.%M")
-    name = "FernandoTest"
+    name = "noCAFAmpls"
     rec_dir = f"{t}_{name}_{mode=}_{with_offset=}_{stimpulse=}_{amplitude=}"
     
     post_config_wait_time = 1

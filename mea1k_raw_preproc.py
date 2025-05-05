@@ -149,10 +149,10 @@ def read_raw_data(path, fname, convert2uV,
     raw_data = _read_mea1k_file(path, fname, row_slice=row_slice, 
                                 col_slice=col_slice, dtype=dtype)
     
-    if not isinstance(row_slice, pd.Index):
-        # if data is recorded with format `all_channels`, we use mapping to subset the amplifers
-        raw_data_mapping, _ = _get_recording_config(path, fname)
-        raw_data = raw_data[raw_data_mapping.values]
+    # if not isinstance(row_slice, pd.Index):
+    #     # if data is recorded with format `all_channels`, we use mapping to subset the amplifers
+    #     raw_data_mapping, _ = _get_recording_config(path, fname)
+    #     raw_data = raw_data[raw_data_mapping.values]
     
     if convert2uV:
         gain = _get_recording_gain(path, fname)

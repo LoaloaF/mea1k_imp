@@ -20,7 +20,7 @@ def origial_characterize():
         print(f"Stimulation unit {i}, Offset: {o}")
     print(stim_unit_offsets)
 
-def alternative_characterize():
+def alternative_characterize(rec_name):
     array = maxlab.chip.Array()
     reset_MEA1K(gain=7, enable_stimulation_power=True)
     array.reset()
@@ -32,15 +32,23 @@ def alternative_characterize():
 
     c = maxlab.chip.Core()
         
-    seq = create_stim_sine_sequence(dac_id=0, amplitude=100, f=1000, ncycles=400, nreps=1)
+    seq = create_stim_sine_sequence(dac_id=0, amplitude=1, f=1000, ncycles=400, nreps=1)
     
-    for ampl_id in range(1024):
+    seen_stim_units = []
+    for ampl_id in range(206, 1024):
+        
+        
         array.connect_amplifier_to_stimulation(ampl_id)
         # assert result == 'OK', f"Failed to connect amplifier {ampl_id} to stimulation unit"
         stim_unit = array.query_stimulation_at_amplifier(ampl_id)
         if stim_unit == '':
             print(f"Amplifier {ampl_id} not connected to stimulation unit. Skipping.")
             continue
+        if (np.array(seen_stim_units) == stim_unit).sum() > 3:
+            print(f"Seen stim unit 3 times already. Skipping.")
+            continue
+        seen_stim_units.append(stim_unit)
+        
         array.connect_amplifier_to_ringnode(int(ampl_id))
         array.download()
 
@@ -48,9 +56,10 @@ def alternative_characterize():
         maxlab.send(c.use_external_port(True))
         print(f"Connected stim unit {stim_unit} to amplifier {ampl_id}, "
               f"connected to ringnode ampl_id:{array.query_amplifier_at_ringnode()}")
-        start_saving(s, dir_name=f"{os.path.dirname(__file__)}/testrec2", fname=f"config_ampl_{ampl_id:04d}_stimunit_{int(stim_unit):02d}")
+        start_saving(s, dir_name=f"{os.path.dirname(__file__)}/{rec_name}", fname=f"config_ampl_{ampl_id:04d}_stimunit_{int(stim_unit):02d}")
         time.sleep(0.1)
-        turn_on_stimulation_units([stim_unit])
+        turn_on_stimulation_units([stim_unit], mode='small_current')
+        time.sleep(1.5)
         
         print(f"\nStimulating ~ ~ ~ ~ ~ ~ ~ ~ on stimUnit {stim_unit}, amplifier {ampl_id}")
         seq.send()
@@ -62,16 +71,17 @@ def alternative_characterize():
 
         time.sleep(.1)
         stop_saving(s)
-
+        
 from mea1k_raw_preproc import read_raw_data
 import matplotlib.pyplot as plt
 
-def post_proc_alt_characterization(debug=False):
-    dirname = f"{os.path.dirname(__file__)}/testrec2"
+def post_proc_alt_characterization(rec_name, debug=False):
+    dirname = f"{os.path.dirname(__file__)}/{rec_name}"
     sine_amplitudes = []
     for fname in sorted(os.listdir(dirname)):
         if not fname.endswith(".raw.h5"):
             continue
+        print(fname.split("_"))
         ampl_id = int(fname.split("_")[-3].replace(".raw.h5", ""))
         stimunit_id = int(fname.split("_")[-1].replace(".raw.h5", ""))
         # if ampl_id < 115:
@@ -93,29 +103,41 @@ def post_proc_alt_characterization(debug=False):
         
         if debug:
             plt.figure(figsize=(20, 8))
-            plt.plot(data[:1024].T, alpha=0.3)
-            plt.plot(data[ampl_id], linewidth=1.5, color='red', linestyle='--', alpha=0.4)
+            plt.plot(data[:100].T, alpha=0.3)
+            plt.plot(data[ampl_id], linewidth=1.5, color='red', linestyle='--', 
+                     alpha=0.4, label='stimulated')
+            plt.plot(dac.astype(float)*1024, linewidth=4, color='black', 
+                     linestyle='--', alpha=0.4, label='DAC')
+        
         
             plt.title(f"Raw data from {fname}")
+            plt.legend()
             plt.show()
+            
     sine_amplitudes = pd.DataFrame(sine_amplitudes, columns=["ampl_id", "stimunit_id", "sine_amplitude"])
     print(sine_amplitudes)
     sine_amplitudes.to_csv(os.path.join(dirname, "sine_amplitudes.csv"))
         
-def vis_characterization():
-    dirname = f"{os.path.dirname(__file__)}/testrec2"
+def vis_characterization(rec_name):
+    dirname = f"{os.path.dirname(__file__)}/{rec_name}"
     sine_amplitudes = pd.read_csv(os.path.join(dirname, "sine_amplitudes.csv"), index_col=None)
     print(sine_amplitudes)
     means = sine_amplitudes.groupby("stimunit_id").mean()
     print(means)
     plt.scatter(sine_amplitudes["stimunit_id"], sine_amplitudes["sine_amplitude"])
     plt.scatter(means.index, means["sine_amplitude"], marker='_')
-    plt.title("Stimulation amplitude over all amplifiers")
+    plt.title(f"Sine amplitude over 3 amplifiers, {rec_name}")
     plt.xlabel("Stimulation unit ID")
     plt.ylabel("Sine amplitude (uV)")
-    plt.savefig("./sine_amplitudes.png")
+    plt.savefig(f"./{rec_name}_sine_amplitudes.png")
+    plt.show()
         
-    
-# alternative_characterize()
-# post_proc_alt_characterization(debug=False)
-vis_characterization()
+# origial_characterize()  
+# alternative_characterize(rec_name="curmode_rec12_10M_ampl1")
+# post_proc_alt_characterization(rec_name="curmode_rec12_10M_ampl1", debug=False)
+# vis_characterization(rec_name="curmode_rec12_10M_ampl1",)
+
+
+# alternative_characterize(rec_name="curmode_rec6_10M_ampl10")
+post_proc_alt_characterization(rec_name="curmode_rec6_10M_ampl10", debug=True)
+vis_characterization(rec_name="curmode_rec6_10M_ampl10",)

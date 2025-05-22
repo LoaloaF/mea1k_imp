@@ -167,7 +167,7 @@ def create_stim_sine_sequence(dac_id=0, amplitude=25, f=1000, ncycles=100,
         
     seq = maxlab.Sequence()
     # Create a time array, 50 us * 20kHz = 1000 samples, 1 khz exmaple
-    t = np.linspace(0,1, int(C.SAMPLING_RATE/f))
+    t = np.linspace(0,1, int(C.SAMPLING_RATE/f), endpoint=False)
     # Create a sine wave with a frequency of 1 kHz
     sine_wave = (amplitude * np.sin(t*2*np.pi)).astype(int)
     seq.append(maxlab.chip.DAC(dac_id, 512))

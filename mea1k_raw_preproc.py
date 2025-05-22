@@ -21,11 +21,15 @@ def _get_recording_gain(path, fname):
     elif fmt in ('routed', 'all_channels'):
         with h5py.File(os.path.join(path, fname), 'r') as file:
             gain = file['data_store/data0000/settings/gain'][:][0].item()
+    print("Found gain in file: ", gain)
+    if MEA_OVERRIDE_GAIN is not None:
+        print(f"Overriding gain to {MEA_OVERRIDE_GAIN}")
+        gain = MEA_OVERRIDE_GAIN
     return gain
 
 def _get_recording_resolution(gain):
-    return (MAX_AMPL_mV/ADC_RESOLUTION)/ MEA_OVERRIDE_GAIN
-    # return (MAX_AMPL_mV/ADC_RESOLUTION) /gain
+    # return (MAX_AMPL_mV/ADC_RESOLUTION)/ MEA_OVERRIDE_GAIN
+    return (MAX_AMPL_mV/ADC_RESOLUTION) /gain
 
 def _get_recording_version(path, fname):
     with h5py.File(os.path.join(path, fname), 'r') as file:
@@ -71,7 +75,7 @@ def _ADC2voltage(data, gain, subtract_dc_offset):
     dtype = np.int16 if gain in (1024.0,512.0,112.0) else np.int32
     max_ampl_uV = int(resolution*ADC_RESOLUTION*1000)
     
-    print(f"Converting ADC values to mV ({resolution:.4f}mV/ "
+    print(f"Converting ADC values with {gain} to mV ({resolution:.4f}mV/ "
                    f"adc step ({ADC_RESOLUTION})) -> range ±{max_ampl_uV:,}"
                    f"uV, casting to {dtype}...")
 
